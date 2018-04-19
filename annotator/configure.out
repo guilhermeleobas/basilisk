@@ -1,0 +1,4 @@
+Using /home/guilhermel/Programs/llvm38 as LLVM source directory
+Using /home/guilhermel/Programs/llvm38/build as LLVM object directory
+Using /home/guilhermel/Programs/llvm38/build/Debug+Asserts/lib/.. as installation root
+Generated Makefile
