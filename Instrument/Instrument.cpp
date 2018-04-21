@@ -64,7 +64,7 @@ void Instrument::insert_call(Module &M, GlobalValue *gv, Instruction *I){
   IRBuilder<> Builder(I);
 
   // Let's create a call to the function collect_d
-  // for some reason, OPT broke if I use the name 'collect_data'
+  // for some reason, OPT breaks if I use the name 'collect_data'
   const std::string function_name = "collect_d";
   Constant *const_function = M.getOrInsertFunction(function_name, 
     FunctionType::getVoidTy(M.getContext()),
