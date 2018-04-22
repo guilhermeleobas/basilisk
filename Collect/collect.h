@@ -1,6 +1,6 @@
 #pragma once
 
-#define FILENAME "count.out"
+#define FILENAME "count.csv"
 
 typedef struct Instruction{
   char name[10];
