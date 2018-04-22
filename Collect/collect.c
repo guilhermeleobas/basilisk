@@ -18,6 +18,7 @@ static Instruction array[100];
 static int size = 0;
 
 void count_instruction(char *name){
+  printf("opa %s\n", name);
   for (int i=0; i<size; i++){
     if (strcmp(array[i].name, name) == 0 /* found */){
       ++array[i].counter;
