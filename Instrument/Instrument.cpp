@@ -16,8 +16,12 @@
 
 #include "Instrument.h"
 
+#include <map>
+
 #define DEBUG_TYPE "Instrument"
 #define COUNTER "DCC888_counter"
+
+std::map<std::string, Value*> variables;
 
 void Instrument::print_instructions(Module &M){
   for (auto &F : M){
@@ -29,52 +33,39 @@ void Instrument::print_instructions(Module &M){
   }
 }
 
-const std::string Instrument::get_function_name (Instruction *I){
-  // return "count_instruction";
-  switch (I->getOpcode()){
-    case Instruction::Store:
-      return "increment_store_count";
-    case Instruction::Load:
-      return "increment_load_count";
-    case Instruction::Add:
-      return "increment_add_count";
-    case Instruction::Mul:
-      return "increment_mul_count";
-    default:
-      return "dump";
-  }
-}
 
+Value* Instrument::alloc_string(Instruction *I){
 
-Value* Instrument::Alloc_string_space(Module &M, const std::string str, Instruction *I){
+  /* 
+  A variable is just a char* with some text identifying the instruction.
+  For instance, we use the getOpcodeName() function.
+  */
+  const std::string opcodeName = I->getOpcodeName();
+
+  // If we already create a variable for the opcodeName, let's just return it
+  if (variables.find(opcodeName) != variables.end())
+    return variables[opcodeName];
+
+  // Otherwise, let's create one
   IRBuilder<> Builder(I);
+  Value *var = Builder.CreateGlobalStringPtr(StringRef(opcodeName));
+  variables[opcodeName] = var;
 
-  // Create Alloca Instruction
-  // unsigned size = 10;
-  // auto arrayType = llvm::ArrayType::get(llvm::IntegerType::get(M.getContext(), 8), size);
-  // AllocaInst *Alloca = Builder.CreateAlloca(arrayType);
-
-  // Create Store Instruction
-  // auto *s = ConstantDataArray::getString(M.getContext(), StringRef(str));
-  auto *s = Builder.CreateGlobalStringPtr(StringRef(str));
-  LoadInst *load = Builder.CreateLoad(s, "target");
-  errs() << *load << "\n";
-  // errs() << *Alloca << "\n";
-  // errs() << *Alloca->getOperand(0)->getType() << "\n";
-  errs() << *s << "\n";
-  return s;
-  // return Builder.CreateStore(s, Alloca, true);
+  return var;
 }
 
+void Instrument::insert_dump_call(Module &M, ReturnInst *RI){
+  IRBuilder<> Builder(RI);
 
-Function* Instrument::build_call(Module &M, const std::string &function_name){
-
-  Constant *const_function = M.getOrInsertFunction("count_instruction",
+  // Let's create the function call
+  Constant *const_function = M.getOrInsertFunction("dump",
     FunctionType::getVoidTy(M.getContext()),
-    Type::getInt8PtrTy(M.getContext()),
     NULL);
 
-  return cast<Function>(const_function);
+  Function *f = cast<Function>(const_function);
+
+  // Create the call
+  Builder.CreateCall(f, std::vector<Value*>());
 }
 
 
@@ -82,23 +73,30 @@ void Instrument::insert_call(Module &M, Instruction *I){
   IRBuilder<> Builder(I);
 
   // Let's create the function call
-  const std::string function_name = get_function_name(I);
-  Function *f = build_call(M, function_name);
+  const std::string function_name = "count_instruction";
 
-  const std::string str = "store";
+  Constant *const_function = M.getOrInsertFunction(function_name,
+    FunctionType::getVoidTy(M.getContext()),
+    Type::getInt8PtrTy(M.getContext()),
+    NULL);
+
+  Function *f = cast<Function>(const_function);
+
+  // Let's create the parameter for the call
+  Value *v = alloc_string(I);
+  
+  // Fill the parameter
   std::vector<Value *> args;
-  Value *v = Alloc_string_space(M, str, I);
   args.push_back(v);
 
+  // Create the call
   Builder.CreateCall(f, args);
 }
 
 
 bool Instrument::runOnModule(Module &M) {
 
-
   for (auto &F : M){
-    errs() << "Function: " << F.getName() << "\n";
     for (auto &BB : F){
       for (auto &I : BB){
         
@@ -106,14 +104,14 @@ bool Instrument::runOnModule(Module &M) {
           insert_call(M, store);
         }
         else if (LoadInst *load = dyn_cast<LoadInst>(&I)){
-          insert_call(M, load);
+          // insert_call(M, load);
         }
         else if (BinaryOperator *bin = dyn_cast<BinaryOperator>(&I)){
-          insert_call(M, bin);
+          // insert_call(M, bin);
         }
         else if (ReturnInst *ri = dyn_cast<ReturnInst>(&I)){
           if (F.getName() == "main")
-            insert_call(M, ri);
+            insert_dump_call(M, ri);
         }
 
       }

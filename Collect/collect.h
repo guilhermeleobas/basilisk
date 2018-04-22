@@ -1,7 +1,14 @@
 #pragma once
 
-void increment_store_count();
-void increment_load_count();
-void increment_add_count();
-void increment_mul_count();
+#define FILENAME "count.out"
+
+typedef struct Instruction{
+  char name[10];
+  unsigned long long counter;
+} Instruction;
+
+static Instruction array[100];
+static int size = 0;
+
+void count_instruction(char*);
 void dump();
