@@ -3,7 +3,7 @@ LLVM_PATH=$HOME/Programs/llvm38/build/bin
 make -C Collect
 
 cd Instrument
-
+./configure
 make install
 
 cd ..
