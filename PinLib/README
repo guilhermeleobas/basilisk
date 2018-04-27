@@ -1,0 +1,17 @@
+# Instructions to build
+
+PIN_ROOT="/path/to/pin/root" make
+
+in your case, PIN is in $HOME/Programs/Pin
+
+PIN_ROOT="$HOME/Programs/Pin" make
+
+# Execute
+
+~/Programs/Pin/pin -t obj-intel64/MyPinTool.dylib -- /bin/ls
+
+where /bin/ls can be replaced by other binary
+
+# Results
+
+Pin creates a new file in this directory called pinatrace.out

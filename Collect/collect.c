@@ -33,6 +33,7 @@ void dump(){
       fprintf(f, "%llu", array[0].counter);
       for (int i=1; i<size; i++)
         fprintf(f, ",%llu", array[i].counter);
+      fprintf(f, "\n");
 
     }
     fclose(f);

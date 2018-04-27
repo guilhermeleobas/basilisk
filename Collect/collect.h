@@ -7,7 +7,7 @@ typedef struct Instruction{
   unsigned long long counter;
 } Instruction;
 
-static Instruction array[100];
+static Instruction array[10000];
 static int size = 0;
 
 void count_instruction(char*);
