@@ -26,7 +26,7 @@ class Instrument : public ModulePass {
   /*
     Inserts in the program a function call to dump a csv
   */
-  void insert_dump_call(Module &M, ReturnInst *RI);
+  void insert_dump_call(Module &M, Instruction *I);
 
   /*
     Add an external call to @count_instruction.

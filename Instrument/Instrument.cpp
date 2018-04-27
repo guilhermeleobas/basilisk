@@ -54,8 +54,8 @@ Value* Instrument::alloc_string(Instruction *I){
   return var;
 }
 
-void Instrument::insert_dump_call(Module &M, ReturnInst *RI){
-  IRBuilder<> Builder(RI);
+void Instrument::insert_dump_call(Module &M, Instruction *I){
+  IRBuilder<> Builder(I);
 
   // Let's create the function call
   Constant *const_function = M.getOrInsertFunction("dump",
@@ -104,14 +104,34 @@ bool Instrument::runOnModule(Module &M) {
           insert_call(M, store);
         }
         else if (LoadInst *load = dyn_cast<LoadInst>(&I)){
-          // insert_call(M, load);
+          insert_call(M, load);
         }
         else if (BinaryOperator *bin = dyn_cast<BinaryOperator>(&I)){
-          // insert_call(M, bin);
+          insert_call(M, bin);
+        }
+        else if (ICmpInst *icmp = dyn_cast<ICmpInst>(&I)){
+          insert_call(M, icmp);
+        }
+        else if (FCmpInst *fcmp = dyn_cast<FCmpInst>(&I)){
+          insert_call(M, fcmp);
+        }
+        else if (BranchInst *br = dyn_cast<BranchInst>(&I)){
+          insert_call(M, br);
+        }
+        else if (IndirectBrInst *bri = dyn_cast<IndirectBrInst>(&I)){
+          insert_call(M, bri);
         }
         else if (ReturnInst *ri = dyn_cast<ReturnInst>(&I)){
           if (F.getName() == "main")
             insert_dump_call(M, ri);
+        }
+        else if (CallInst *ci = dyn_cast<CallInst>(&I)){
+          Function *fun = ci->getCalledFunction();
+          if (fun){
+            std::string name = fun->getName();
+            if (name == "exit")
+              insert_dump_call(M, ci);
+          }
         }
 
       }
