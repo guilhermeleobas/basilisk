@@ -2,7 +2,7 @@
 
 PIN_ROOT="/path/to/pin/root" make
 
-in your case, PIN is in $HOME/Programs/Pin
+in our case, PIN is in $HOME/Programs/Pin
 
 PIN_ROOT="$HOME/Programs/Pin" make
 
@@ -14,4 +14,11 @@ where /bin/ls can be replaced by other binary
 
 # Results
 
-Pin creates a new file in this directory called pinatrace.out
+Pin creates a new file in this directory called pin.out
+
+
+# Instructions
+
+
+
+
