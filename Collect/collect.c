@@ -18,7 +18,7 @@ void count_instruction(char *name){
   ++size;
 }
 
-void dump(){
+void dump_csv(){
 
   FILE *f;
   f = fopen(FILENAME, "w");
