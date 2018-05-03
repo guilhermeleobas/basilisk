@@ -107,7 +107,7 @@ int main(int argc, char *argv[]) {
     return Usage();
   }
 
-  out.open("pin.out");
+  out.open("stores.out");
 
   PIN_InitSymbols();
   IMG_AddInstrumentFunction(Image, 0);
