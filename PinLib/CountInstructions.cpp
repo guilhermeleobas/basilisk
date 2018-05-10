@@ -21,6 +21,44 @@ void count_inst(const string *type, const string *s){
   }
 }
 
+
+std::string check_mnemonic(const string &m){
+
+  if (m == "ADD" || m == "INC")
+    return "ADD";
+
+  if (m == "SUB" || m == "DEC" || 
+      m == "PSUBB" || m == "PSUBW" || m == "PSUBD")
+    return "SUB";
+
+  if (m == "MUL" || m == "IMUL")
+    return "MUL";
+
+  if (m == "DIV" || m == "IDIV")
+    return "DIV";
+
+  // floating-point instructions
+  if (m == "ADDPD" || m == "ADDPS" || m == "ADDSD" || m == "ADDSS" ||
+      m == "FADD" || m == "FADDP" || m == "FIADD")
+    return "FADD";
+
+  if (m == "SUBPD" || m == "SUBPS" || m == "SUBSD" || m == "SUBSS" ||
+      m == "FSUB" || m == "FSUBP" || m == "FISUB")
+    return "FSUB";
+
+  if (m == "MULPD" || m == "MULPS" || m == "MULSD" || m == "MULSS" ||
+      m == "FMUL" || m == "FMULP" || m == "FIMUL")
+    return "FMUL";
+
+  if (m == "DIVPD" || m == "DIVPS" || m == "DIVSD" || m == "DIVSS" ||
+      m == "FDIV" || m == "FDIVP" || m == "FIDIV" ||
+      m == "FDIVR" || m == "FDIVRP" || m == "FIDIVR")
+    return "FDIV";
+
+  return "";
+}
+
+
 VOID Trace(TRACE trace, VOID *a) {
   // if (!filter.SelectTrace(trace))
   //   return;
@@ -35,21 +73,30 @@ VOID Trace(TRACE trace, VOID *a) {
   for (BBL bbl = TRACE_BblHead(trace); BBL_Valid(bbl); bbl = BBL_Next(bbl)) {
     for (INS ins = BBL_InsHead(bbl); INS_Valid(ins); ins = INS_Next(ins)) {
 
-      if (INS_IsMemoryRead(ins)){
-        INS_InsertPredicatedCall(ins, IPOINT_BEFORE, (AFUNPTR)count_inst,
-            IARG_PTR, load,
-            IARG_PTR, new string(INS_Mnemonic(ins)),
-            IARG_END);
-      }
+      // sete.insert(INS_Mnemonic(ins));
 
-      // std::string s = check_mnemonic(INS_Mnemonic(ins));
-      //
-      // if (s.size() != 0){
-      //   INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)count_inst,
-      //       IARG_PTR, new string(s),
+      // if (INS_IsMemoryWrite(ins)){
+      //   INS_InsertPredicatedCall(ins, IPOINT_BEFORE, (AFUNPTR)count_inst,
+      //       IARG_PTR, store,
       //       IARG_PTR, new string(INS_Mnemonic(ins)),
       //       IARG_END);
       // }
+
+      // if (INS_IsMemoryRead(ins)){
+      //   INS_InsertPredicatedCall(ins, IPOINT_BEFORE, (AFUNPTR)count_inst,
+      //       IARG_PTR, load,
+      //       IARG_PTR, new string(INS_Mnemonic(ins)),
+      //       IARG_END);
+      // }
+
+      std::string s = check_mnemonic(INS_Mnemonic(ins));
+
+      if (s.size() != 0){
+        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)count_inst,
+            IARG_PTR, new string(s),
+            IARG_PTR, new string(INS_Mnemonic(ins)),
+            IARG_END);
+      }
 
     }
   }
@@ -107,7 +154,7 @@ int main(int argc, char *argv[]) {
     return Usage();
   }
   
-  out.open("loads.csv");
+  out.open("binops.csv");
 
   // filter.Activate();
 

@@ -1,88 +1,81 @@
 #include <iomanip>
 #include <iostream>
 #include <set>
+#include <map>
+#include <string>
 
 #include "pin.H"
 #include "instlib.H"
+#include "lib.H"
 
 using namespace INSTLIB;
 
 ofstream out;
-// FILTER filter;
-// KNOB<string> KnobOutputFile(KNOB_MODE_WRITEONCE, "pintool", "o", "pin.out",
-//                             "specify output file name");
+FILTER filter;
 
-static long long unsigned int scount = 0;
-static long long unsigned int collect_data_count = 0;
-static bool valid = true;
+std::set<std::string> sete;
 
-void docount(){
-  if (valid)
-    scount++;
-  else
-    collect_data_count++;
+void count_inst(const string *type, const string *s){
+  if (valid){
+    mapa[*type + "_" + prefix + *s]++;
+  }
 }
 
-VOID mark_start(){
-  valid = false;
-}
 
-VOID mark_end(){
-  valid = true;
-}
-
-VOID Image(IMG img, VOID *v){
-
-    // for (SYM sym = IMG_RegsymHead(img); SYM_Valid(sym); sym = SYM_Next(sym)){
-    //   string undFuncName = PIN_UndecorateSymbolName(SYM_Name(sym), UNDECORATION_NAME_ONLY);
-    //   out << undFuncName << ' ' << SYM_Name(sym) << endl;
-    // }
-    // out << endl;
-
-    RTN rtn = RTN_FindByName(img, "count_instruction");
-    if (RTN_Valid(rtn)){
-        RTN_Open(rtn);
-        RTN_InsertCall(rtn, IPOINT_BEFORE, (AFUNPTR)mark_start, IARG_END);
-        RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)mark_end, IARG_END);
-        RTN_Close(rtn);
-    }
-    // else{
-    //   out << "Not found" << endl;
-    // }
-}
 
 VOID Trace(TRACE trace, VOID *a) {
   // if (!filter.SelectTrace(trace))
-    // return;
+  //   return;
+
+  RTN rtn = TRACE_Rtn(trace);
+  if (RTN_Valid(rtn)){
+    if (RTN_Name(rtn) == "count_instruction" || 
+        RTN_Name(rtn) == "dump_csv")
+      return;
+  }
 
   for (BBL bbl = TRACE_BblHead(trace); BBL_Valid(bbl); bbl = BBL_Next(bbl)) {
     for (INS ins = BBL_InsHead(bbl); INS_Valid(ins); ins = INS_Next(ins)) {
 
       if (INS_IsMemoryWrite(ins)){
-        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)docount,
-          IARG_END);
-        out << INS_Disassemble(ins) << " - " << INS_Mnemonic(ins) << endl;
+        INS_InsertPredicatedCall(ins, IPOINT_BEFORE, (AFUNPTR)count_inst,
+            IARG_PTR, store,
+            IARG_PTR, new string(INS_Mnemonic(ins)),
+            IARG_END);
       }
 
-      // out << hex << setw(8) << INS_Address(ins) << " ";
-      //
-      // RTN rtn = TRACE_Rtn(trace);
-      // if (RTN_Valid(rtn))
-      // {
-      //     IMG img = SEC_Img(RTN_Sec(rtn));
-      //     if (IMG_Valid(img)) {
-      //        out << IMG_Name(img) << ":" << RTN_Name(rtn) << " " ;
-      //     }
-      // }
-      //
-      // out << INS_Disassemble(ins) << endl;
     }
   }
 }
 
+
 VOID Fini(INT32 code, VOID *v) {
-  out << dec << scount << endl;
-  // out << dec << collect_data_count << endl;
+  bool go = false;
+
+  for (map<const string, unsigned long long int>::iterator it = mapa.begin();
+       it != mapa.end(); it++){
+    if (go)
+      out << ',' << it->first;
+    else
+      out << it->first;
+
+    go = true;
+  }
+  
+  out << endl;
+  go = false;
+
+  for (map<const string, unsigned long long int>::iterator it = mapa.begin();
+       it != mapa.end(); it++){
+    if (go)
+      out << ',' << it->second;
+    else
+      out << it->second;
+
+    go = true;
+  }
+  out << endl;
+  
   out.close();
 }
 
@@ -106,8 +99,10 @@ int main(int argc, char *argv[]) {
   if (PIN_Init(argc, argv)) {
     return Usage();
   }
+  
+  out.open("stores.csv");
 
-  out.open("stores.out");
+  // filter.Activate();
 
   PIN_InitSymbols();
   IMG_AddInstrumentFunction(Image, 0);

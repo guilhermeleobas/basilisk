@@ -1,7 +1,7 @@
 ##======- Makefile --------------------------------------*- Makefile -*-======##
 ##===----------------------------------------------------------------------===##
-PROJECT_NAME = DCC888
-LIBRARYNAME = DCC888
+PROJECT_NAME = Basilisk
+LIBRARYNAME = DCCBasilisk
 LOADABLE_MODULE = 1
 USEDLIBS =
 LEVEL = .

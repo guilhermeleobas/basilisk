@@ -22,6 +22,7 @@
 #define COUNTER "DCC888_counter"
 
 std::map<std::string, Value*> variables;
+std::map<std::string, Value*> count_variables;
 
 void Instrument::print_instructions(Module &M){
   for (auto &F : M){
@@ -54,11 +55,25 @@ Value* Instrument::alloc_string(Instruction *I){
   return var;
 }
 
+
+Value* Instrument::alloc_counter(Module &M, Instruction *I){
+  
+  const std::string opcodeName = I->getOpcodeName();
+  
+  IRBuilder<> Builder(I);
+
+  M.getOrInsertGlobal(opcodeName + "_inc", Builder.getInt64Ty());
+  
+  GlobalVariable *gVar = M.getNamedGlobal(opcodeName + "_inc"); 
+  return gVar;
+}
+
+
 void Instrument::insert_dump_call(Module &M, Instruction *I){
   IRBuilder<> Builder(I);
 
   // Let's create the function call
-  Constant *const_function = M.getOrInsertFunction("dump",
+  Constant *const_function = M.getOrInsertFunction("dump_csv",
     FunctionType::getVoidTy(M.getContext()),
     NULL);
 
@@ -93,6 +108,19 @@ void Instrument::insert_call(Module &M, Instruction *I){
   Builder.CreateCall(f, args);
 }
 
+void Instrument::insert_inc(Module &M, Instruction *I){
+  IRBuilder<> Builder(I);
+
+  alloc_counter(M, I);
+
+  GlobalVariable *gVar = M.getNamedGlobal(std::string(I->getOpcodeName()) + "_inc");
+
+  LoadInst *Load = Builder.CreateLoad(gVar);
+  Value *Inc = Builder.CreateAdd(Builder.getInt64(1), Load);
+  StoreInst *Store = Builder.CreateStore(Inc, gVar);
+
+}
+
 
 bool Instrument::runOnModule(Module &M) {
 
@@ -101,26 +129,31 @@ bool Instrument::runOnModule(Module &M) {
       for (auto &I : BB){
         
         if (StoreInst *store = dyn_cast<StoreInst>(&I)){
-          insert_call(M, store);
+          // insert_call(M, store);
+          insert_inc(M, store);
         }
         else if (LoadInst *load = dyn_cast<LoadInst>(&I)){
-          insert_call(M, load);
+          // insert_call(M, load);
+          insert_inc(M, load);
         }
         else if (BinaryOperator *bin = dyn_cast<BinaryOperator>(&I)){
-          insert_call(M, bin);
+          // insert_call(M, bin);
+          insert_inc(M, bin);
         }
         else if (ICmpInst *icmp = dyn_cast<ICmpInst>(&I)){
-          insert_call(M, icmp);
+          // insert_call(M, icmp);
+          insert_inc(M, icmp);
         }
         else if (FCmpInst *fcmp = dyn_cast<FCmpInst>(&I)){
-          insert_call(M, fcmp);
+          // insert_call(M, fcmp);
+          insert_inc(M, fcmp);
         }
-        else if (BranchInst *br = dyn_cast<BranchInst>(&I)){
-          insert_call(M, br);
-        }
-        else if (IndirectBrInst *bri = dyn_cast<IndirectBrInst>(&I)){
-          insert_call(M, bri);
-        }
+        // else if (BranchInst *br = dyn_cast<BranchInst>(&I)){
+        //   // insert_call(M, br);
+        // }
+        // else if (IndirectBrInst *bri = dyn_cast<IndirectBrInst>(&I)){
+        //   // insert_call(M, bri);
+        // }
         else if (ReturnInst *ri = dyn_cast<ReturnInst>(&I)){
           if (F.getName() == "main")
             insert_dump_call(M, ri);

@@ -13,8 +13,8 @@ command -v "$LLVM_CONFIG" >/dev/null 2>&1 \
 MAKEFILE_BODY=$(cat <<EOF
 ##======- Makefile --------------------------------------*- Makefile -*-======##
 ##===----------------------------------------------------------------------===##
-PROJECT_NAME = DCC888
-LIBRARYNAME = DCC888
+PROJECT_NAME = Basilisk
+LIBRARYNAME = DCCBasilisk
 LOADABLE_MODULE = 1
 USEDLIBS =
 LEVEL = .

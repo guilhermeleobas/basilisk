@@ -22,6 +22,7 @@ class Instrument : public ModulePass {
     ` @0 = private unnamed_addr constant [6 x i8] c"store\00" `
   */
   Value* alloc_string(Instruction *I);
+  Value* alloc_counter(Module &M, Instruction *I);
   
   /*
     Inserts in the program a function call to dump a csv
@@ -36,6 +37,7 @@ class Instrument : public ModulePass {
     `count_instruction` is defined in the file Collect/collect.c
   */
   void insert_call(Module &M, Instruction *inst);
+  void insert_inc(Module &M, Instruction *inst);
 
   Instrument() : ModulePass(ID) {}
   ~Instrument() { }
