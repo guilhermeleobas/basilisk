@@ -121,11 +121,23 @@ void Instrument::insert_inc(Module &M, Instruction *I){
 
 }
 
+int Instrument::getNumPredecessors(BasicBlock *BB){
+  int cnt = 0;
+  
+  for (BasicBlock *Pred : predecessors(BB))
+    cnt++;
+
+  return cnt;
+}
+
 
 bool Instrument::runOnModule(Module &M) {
 
   for (auto &F : M){
     for (auto &BB : F){
+      
+      errs() << getNumPredecessors(&BB) << "\n";
+      
       for (auto &I : BB){
         
         if (StoreInst *store = dyn_cast<StoreInst>(&I)){

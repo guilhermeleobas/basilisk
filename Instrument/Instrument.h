@@ -38,6 +38,7 @@ class Instrument : public ModulePass {
   */
   void insert_call(Module &M, Instruction *inst);
   void insert_inc(Module &M, Instruction *inst);
+  int getNumPredecessors(BasicBlock *BB);
 
   Instrument() : ModulePass(ID) {}
   ~Instrument() { }
