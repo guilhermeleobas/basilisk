@@ -39,7 +39,7 @@ VOID Trace(TRACE trace, VOID *a) {
 
       if (INS_IsMemoryWrite(ins)){
         INS_InsertPredicatedCall(ins, IPOINT_BEFORE, (AFUNPTR)count_inst,
-            IARG_PTR, store,
+            IARG_PTR, new string(store),
             IARG_PTR, new string(INS_Mnemonic(ins)),
             IARG_END);
       }

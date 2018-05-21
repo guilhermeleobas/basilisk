@@ -12,11 +12,11 @@ FILTER filter;
 
 VOID Image(IMG img, VOID *v){
 
-    // for (SYM sym = IMG_RegsymHead(img); SYM_Valid(sym); sym = SYM_Next(sym)){
-    //   string undFuncName = PIN_UndecorateSymbolName(SYM_Name(sym), UNDECORATION_NAME_ONLY);
-    //   out << undFuncName << ' ' << SYM_Name(sym) << endl;
-    // }
-    // out << endl;
+  // for (SYM sym = IMG_RegsymHead(img); SYM_Valid(sym); sym = SYM_Next(sym)){
+  //   string undFuncName = PIN_UndecorateSymbolName(SYM_Name(sym), UNDECORATION_NAME_ONLY);
+  //   out << undFuncName << ' ' << SYM_Name(sym) << endl;
+  // }
+  // out << endl;
 
 }
 
@@ -28,16 +28,24 @@ VOID Trace(TRACE trace, VOID *a) {
   for (BBL bbl = TRACE_BblHead(trace); BBL_Valid(bbl); bbl = BBL_Next(bbl)) {
     for (INS ins = BBL_InsHead(bbl); INS_Valid(ins); ins = INS_Next(ins)) {
 
-      // if (INS_IsMemoryWrite(ins)){
-      //   INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)docount,
-      //     IARG_END);
-      // }
-      if (INS_IsMemoryRead(ins)){
-        out << INS_Disassemble(ins) << " - " << INS_Mnemonic(ins) << " with load" << endl;
+      RTN rtn = TRACE_Rtn(trace);
+      
+      bool load = false, store = false;
+      
+      if (INS_IsMemoryRead(ins))
+        load = true;
+      if (INS_IsMemoryWrite(ins))
+        store = true;
+      
+      if (RTN_Valid(rtn)){
+        IMG img = SEC_Img(RTN_Sec(rtn));
+        if (IMG_Valid(img)){
+          out << IMG_Name(img) << ":" << RTN_Name(rtn) << " " ;
+        }
+
       }
-      else {
-        out << INS_Disassemble(ins) << " - " << INS_Mnemonic(ins) << endl;
-      }
+
+      out << INS_Disassemble(ins) << ' ' << load << ' ' << store << endl;
 
     }
   }
