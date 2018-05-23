@@ -15,9 +15,15 @@ FILTER filter;
 
 std::set<std::string> sete;
 
-void count_inst(const string *type, const string *s){
+// void count_inst(const string *type, const string *s){
+//   if (valid){
+//     mapa[*type + "_" + prefix + *s]++;
+//   }
+// }
+
+void count_inst(const string *type){
   if (valid){
-    mapa[*type + "_" + prefix + *s]++;
+    mapa[*type + "_" + prefix]++;
   }
 }
 
@@ -27,7 +33,7 @@ std::string check_mnemonic(const string &m){
   if (m == "ADD" || m == "INC")
     return "ADD";
 
-  if (m == "SUB" || m == "DEC" || 
+  if (m == "SUB" || m == "DEC" || "SBB" ||
       m == "PSUBB" || m == "PSUBW" || m == "PSUBD")
     return "SUB";
 
@@ -73,28 +79,12 @@ VOID Trace(TRACE trace, VOID *a) {
   for (BBL bbl = TRACE_BblHead(trace); BBL_Valid(bbl); bbl = BBL_Next(bbl)) {
     for (INS ins = BBL_InsHead(bbl); INS_Valid(ins); ins = INS_Next(ins)) {
 
-      // sete.insert(INS_Mnemonic(ins));
-
-      // if (INS_IsMemoryWrite(ins)){
-      //   INS_InsertPredicatedCall(ins, IPOINT_BEFORE, (AFUNPTR)count_inst,
-      //       IARG_PTR, store,
-      //       IARG_PTR, new string(INS_Mnemonic(ins)),
-      //       IARG_END);
-      // }
-
-      // if (INS_IsMemoryRead(ins)){
-      //   INS_InsertPredicatedCall(ins, IPOINT_BEFORE, (AFUNPTR)count_inst,
-      //       IARG_PTR, load,
-      //       IARG_PTR, new string(INS_Mnemonic(ins)),
-      //       IARG_END);
-      // }
-
       std::string s = check_mnemonic(INS_Mnemonic(ins));
 
       if (s.size() != 0){
-        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)count_inst,
+        INS_InsertPredicatedCall(ins, IPOINT_BEFORE, (AFUNPTR)count_inst,
             IARG_PTR, new string(s),
-            IARG_PTR, new string(INS_Mnemonic(ins)),
+            // IARG_PTR, new string(INS_Mnemonic(ins)),
             IARG_END);
       }
 

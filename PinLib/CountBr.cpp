@@ -15,13 +15,11 @@ FILTER filter;
 
 std::set<std::string> sete;
 
-void count_inst(const string *type){
+void count_inst(const string *type, const string *s){
   if (valid){
-    mapa[*type + "_" + prefix]++;
+    mapa[*type + "_" + prefix + *s]++;
   }
 }
-
-
 
 VOID Trace(TRACE trace, VOID *a) {
   // if (!filter.SelectTrace(trace))
@@ -37,12 +35,29 @@ VOID Trace(TRACE trace, VOID *a) {
   for (BBL bbl = TRACE_BblHead(trace); BBL_Valid(bbl); bbl = BBL_Next(bbl)) {
     for (INS ins = BBL_InsHead(bbl); INS_Valid(ins); ins = INS_Next(ins)) {
 
-      if (INS_IsMemoryWrite(ins)){
-        INS_InsertPredicatedCall(ins, IPOINT_BEFORE, (AFUNPTR)count_inst,
-            IARG_PTR, new string(store),
-            // IARG_PTR, new string(INS_Mnemonic(ins)),
-            IARG_END);
+      if (INS_IsBranch(ins)){
+        if (INS_IsIndirectBranchOrCall(ins)){
+          INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)count_inst,
+              IARG_PTR, new string("br"),
+              IARG_PTR, new string("indirect"),
+              IARG_END);
+        }
+        if (INS_IsDirectBranchOrCall(ins)){
+          INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)count_inst,
+              IARG_PTR, new string("br"),
+              IARG_PTR, new string("direct"),
+              IARG_END);
+        }
       }
+
+      // std::string s = check_mnemonic(INS_Mnemonic(ins));
+      //
+      // if (s.size() != 0){
+      //   INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)count_inst,
+      //       IARG_PTR, new string(s),
+      //       IARG_PTR, new string(INS_Mnemonic(ins)),
+      //       IARG_END);
+      // }
 
     }
   }
@@ -100,7 +115,7 @@ int main(int argc, char *argv[]) {
     return Usage();
   }
   
-  out.open("stores.csv");
+  out.open("br.csv");
 
   // filter.Activate();
 

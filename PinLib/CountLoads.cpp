@@ -15,9 +15,9 @@ FILTER filter;
 
 std::set<std::string> sete;
 
-void count_inst(const string *type, const string *s){
+void count_inst(const string *type){
   if (valid){
-    mapa[*type + "_" + prefix + *s]++;
+    mapa[*type + "_" + prefix]++;
   }
 }
 
@@ -38,7 +38,7 @@ VOID Trace(TRACE trace, VOID *a) {
       if (INS_IsMemoryRead(ins)){
         INS_InsertPredicatedCall(ins, IPOINT_BEFORE, (AFUNPTR)count_inst,
             IARG_PTR, new string(load),
-            IARG_PTR, new string(INS_Mnemonic(ins)),
+            // IARG_PTR, new string(INS_Mnemonic(ins)),
             IARG_END);
       }
 

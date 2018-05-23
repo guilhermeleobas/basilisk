@@ -1,5 +1,6 @@
 #include <iomanip>
 #include <iostream>
+#include <map>
 #include <set>
 
 #include "pin.H"
@@ -9,6 +10,7 @@ using namespace INSTLIB;
 
 ofstream out;
 FILTER filter;
+std::map<std::string, set<std::string> > mapa;
 
 VOID Image(IMG img, VOID *v){
 
@@ -45,13 +47,23 @@ VOID Trace(TRACE trace, VOID *a) {
 
       }
 
-      out << INS_Disassemble(ins) << ' ' << load << ' ' << store << endl;
+      out << INS_Disassemble(ins) << ' ' << load << ' ' << store << ' ' << INS_Mnemonic(ins) << endl;
+
+      std::string m = INS_Mnemonic(ins);
+      if (m.find("SUB") != std::string::npos){
+        mapa["SUB"].insert (m);
+      }
 
     }
   }
 }
 
 VOID Fini(INT32 code, VOID *v) {
+  for (set<std::string>::iterator it = mapa["SUB"].begin();
+       it != mapa["SUB"].end(); it++){
+    out << *it << ' ';
+  }
+  out << "\n";
   out.close();
 }
 
