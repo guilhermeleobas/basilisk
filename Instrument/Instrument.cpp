@@ -56,9 +56,13 @@ Value* Instrument::alloc_string(Instruction *I){
 }
 
 
-Value* Instrument::alloc_counter(Module &M, Instruction *I){
+Value* Instrument::alloc_counter(Module &M, Instruction *I, bool branch=false){
   
-  const std::string opcodeName = I->getOpcodeName();
+  std::string opcodeName;
+  if (!branch)
+    opcodeName = I->getOpcodeName();
+  else
+    opcodeName = "br";
   
   IRBuilder<> Builder(I);
 
@@ -108,12 +112,21 @@ void Instrument::insert_call(Module &M, Instruction *I){
   Builder.CreateCall(f, args);
 }
 
-void Instrument::insert_inc(Module &M, Instruction *I){
+void Instrument::insert_inc(Module &M, Instruction *I, bool branch=false){
   IRBuilder<> Builder(I);
 
-  alloc_counter(M, I);
+  alloc_counter(M, I, branch);
 
-  GlobalVariable *gVar = M.getNamedGlobal(std::string(I->getOpcodeName()) + "_inc");
+  GlobalVariable *gVar;
+
+  if (!branch)
+    gVar = M.getNamedGlobal(std::string(I->getOpcodeName()) + "_inc");
+  else{
+    gVar = M.getNamedGlobal("br_inc");
+  }
+
+  // if (branch)
+    // errs() << "passou " << *gVar << " AAA\n";
 
   LoadInst *Load = Builder.CreateLoad(gVar);
   Value *Inc = Builder.CreateAdd(Builder.getInt64(1), Load);
@@ -135,9 +148,6 @@ bool Instrument::runOnModule(Module &M) {
 
   for (auto &F : M){
     for (auto &BB : F){
-      
-      errs() << getNumPredecessors(&BB) << "\n";
-      
       for (auto &I : BB){
         
         if (StoreInst *store = dyn_cast<StoreInst>(&I)){
@@ -179,6 +189,15 @@ bool Instrument::runOnModule(Module &M) {
           }
         }
 
+      }
+    }
+  }
+
+  for (auto &F : M){
+    for (auto &BB : F){
+      if (getNumPredecessors(&BB) >= 2){
+        Instruction *ins = BB.getFirstNonPHI(); 
+        insert_inc(M, ins, true);
       }
     }
   }

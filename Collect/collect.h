@@ -41,3 +41,5 @@ long long int fcmp_inc = 0;
 long long int fdiv_inc = 0;
 long long int fmul_inc = 0;
 long long int fsub_inc = 0;
+
+long long int br_inc = 0;
