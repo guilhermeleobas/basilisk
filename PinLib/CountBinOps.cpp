@@ -30,15 +30,18 @@ void count_inst(const string *type){
 
 std::string check_mnemonic(const string &m){
 
-  if (m == "ADD" || m == "INC")
+  if (m == "ADD" || m == "INC"){
     return "ADD";
+  }
 
-  if (m == "SUB" || m == "DEC" || "SBB" ||
-      m == "PSUBB" || m == "PSUBW" || m == "PSUBD")
+  if (m == "SUB" || m == "DEC" || m == "SBB" ||
+      m == "PSUBB" || m == "PSUBW" || m == "PSUBD"){
     return "SUB";
+  }
 
-  if (m == "MUL" || m == "IMUL")
+  if (m == "MUL" || m == "IMUL"){
     return "MUL";
+  }
 
   if (m == "DIV" || m == "IDIV")
     return "DIV";
