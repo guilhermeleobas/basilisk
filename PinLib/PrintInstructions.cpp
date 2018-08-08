@@ -42,12 +42,13 @@ VOID Trace(TRACE trace, VOID *a) {
       if (RTN_Valid(rtn)){
         IMG img = SEC_Img(RTN_Sec(rtn));
         if (IMG_Valid(img)){
-          out << IMG_Name(img) << ":" << RTN_Name(rtn) << " " ;
+          /* out << IMG_Name(img) << ":" << RTN_Name(rtn) << " " ; */
+          out << RTN_Name(rtn) << " " ;
         }
 
       }
-
-      out << INS_Disassemble(ins) << ' ' << load << ' ' << store << ' ' << INS_Mnemonic(ins) << endl;
+      
+      out << INS_Disassemble(ins) << ' ' << (load == 1 ? "[L]" : "") << ' ' << (store == 1 ? "[S]" : "") << ' ' << INS_Mnemonic(ins) << endl;
 
       std::string m = INS_Mnemonic(ins);
       if (m.find("SUB") != std::string::npos){
