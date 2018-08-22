@@ -1,12 +1,20 @@
-LLVM_PATH=$HOME/Programs/llvm38/build/bin
+export LLVM_DIR=$HOME/Programs/llvm61/build/lib/cmake
 
 make -C Collect
 
-cd Instrument
-./configure
-make install
+rm -rf build
+mkdir build
+cd build
+cmake -DCMAKE_PREFIX_PATH=$HOME/Programs/llvm61/build ..
+make
 
-cd ..
+cp $(pwd)/Instrument/DCCBasilisk.* $LLVM_DIR/../
+
+# cd Instrument
+# ./configure
+# make install
+#
+# cd ..
 
 # make install && \
 # $LLVM_PATH/clang -S -emit-llvm ../test/t2.c -o t1.bc && \

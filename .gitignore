@@ -5,4 +5,5 @@ obj-intel64
 .DS_Store
 *.log
 *.csv
+build
 

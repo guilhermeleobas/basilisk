@@ -97,7 +97,7 @@ void Instrument::insert_call(Module &M, Instruction *I){
   Constant *const_function = M.getOrInsertFunction(function_name,
     FunctionType::getVoidTy(M.getContext()),
     Type::getInt8PtrTy(M.getContext()),
-    NULL);
+    nullptr);
 
   Function *f = cast<Function>(const_function);
 
@@ -113,7 +113,6 @@ void Instrument::insert_call(Module &M, Instruction *I){
 }
 
 void Instrument::insert_inc(Module &M, Instruction *I, bool branch=false){
-  IRBuilder<> Builder(I);
 
   alloc_counter(M, I, branch);
 
@@ -124,6 +123,8 @@ void Instrument::insert_inc(Module &M, Instruction *I, bool branch=false){
   else{
     gVar = M.getNamedGlobal("br_inc");
   }
+  
+  IRBuilder<> Builder(I);
 
   // if (branch)
     // errs() << "passou " << *gVar << " AAA\n";
@@ -196,7 +197,7 @@ bool Instrument::runOnModule(Module &M) {
   for (auto &F : M){
     for (auto &BB : F){
       if (getNumPredecessors(&BB) >= 2){
-        Instruction *ins = BB.getFirstNonPHI(); 
+        Instruction *ins = BB.getFirstNonPHI();
         insert_inc(M, ins, true);
       }
     }

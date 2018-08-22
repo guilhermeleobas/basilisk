@@ -1,5 +1,5 @@
 
-CC     = $(HOME)/Programs/llvm38/build/bin/clang
+CC     = $(HOME)/Programs/llvm61/build/bin/clang
 CFLAGS = -g -I$(IDIR) -disable-inlining
 
 all:
