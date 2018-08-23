@@ -197,7 +197,7 @@ bool Instrument::runOnModule(Module &M) {
   for (auto &F : M){
     for (auto &BB : F){
       if (getNumPredecessors(&BB) >= 2){
-        Instruction *ins = BB.getFirstNonPHI();
+        Instruction *ins = BB.getTerminator();
         insert_inc(M, ins, true);
       }
     }
