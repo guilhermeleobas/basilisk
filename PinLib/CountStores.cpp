@@ -13,11 +13,14 @@ using namespace INSTLIB;
 ofstream out;
 FILTER filter;
 
-std::set<std::string> sete;
-
 void count_inst(const string *type){
   if (valid){
-    mapa[*type + "_" + prefix]++;
+    if (prefix == "before")
+      bef[*type]++;
+    else if (prefix == "main")
+      ma[*type]++;
+    else
+      en[*type]++;
   }
 }
 
@@ -36,7 +39,7 @@ VOID Trace(TRACE trace, VOID *a) {
 
   for (BBL bbl = TRACE_BblHead(trace); BBL_Valid(bbl); bbl = BBL_Next(bbl)) {
     for (INS ins = BBL_InsHead(bbl); INS_Valid(ins); ins = INS_Next(ins)) {
-
+      
       if (INS_IsMemoryWrite(ins)){
         INS_InsertPredicatedCall(ins, IPOINT_BEFORE, (AFUNPTR)count_inst,
             IARG_PTR, new string(store),
@@ -50,32 +53,8 @@ VOID Trace(TRACE trace, VOID *a) {
 
 
 VOID Fini(INT32 code, VOID *v) {
-  bool go = false;
-
-  for (map<const string, unsigned long long int>::iterator it = mapa.begin();
-       it != mapa.end(); it++){
-    if (go)
-      out << ',' << it->first;
-    else
-      out << it->first;
-
-    go = true;
-  }
-  
-  out << endl;
-  go = false;
-
-  for (map<const string, unsigned long long int>::iterator it = mapa.begin();
-       it != mapa.end(); it++){
-    if (go)
-      out << ',' << it->second;
-    else
-      out << it->second;
-
-    go = true;
-  }
-  out << endl;
-  
+  out << "store_before, store_main, store_end\n";
+  out << bef["store"] << ", " << ma["store"] << ", " << en["store"] << "\n";
   out.close();
 }
 

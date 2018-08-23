@@ -13,11 +13,14 @@ using namespace INSTLIB;
 ofstream out;
 FILTER filter;
 
-std::set<std::string> sete;
-
 void count_inst(const string *type){
   if (valid){
-    mapa[*type + "_" + prefix]++;
+    if (prefix == "before")
+      bef[*type]++;
+    else if (prefix == "main")
+      ma[*type]++;
+    else
+      en[*type]++;
   }
 }
 
@@ -55,34 +58,9 @@ VOID Trace(TRACE trace, VOID *a) {
   }
 }
 
-
 VOID Fini(INT32 code, VOID *v) {
-  bool go = false;
-
-  for (map<const string, unsigned long long int>::iterator it = mapa.begin();
-       it != mapa.end(); it++){
-    if (go)
-      out << ',' << it->first;
-    else
-      out << it->first;
-
-    go = true;
-  }
-  
-  out << endl;
-  go = false;
-
-  for (map<const string, unsigned long long int>::iterator it = mapa.begin();
-       it != mapa.end(); it++){
-    if (go)
-      out << ',' << it->second;
-    else
-      out << it->second;
-
-    go = true;
-  }
-  out << endl;
-  
+  out << "load_before, load_main, load_end\n";
+  out << bef["load"] << ", " << ma["load"] << ", " << en["load"] << "\n";
   out.close();
 }
 

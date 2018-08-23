@@ -13,11 +13,14 @@ using namespace INSTLIB;
 ofstream out;
 FILTER filter;
 
-std::set<std::string> sete;
-
-void count_inst(const string *type, const string *s){
+void count_inst(const string *type){
   if (valid){
-    mapa[*type + "_" + prefix + *s]++;
+    if (prefix == "before")
+      bef[*type]++;
+    else if (prefix == "main")
+      ma[*type]++;
+    else
+      en[*type]++;
   }
 }
 
@@ -31,66 +34,37 @@ VOID Trace(TRACE trace, VOID *a) {
         RTN_Name(rtn) == "dump_csv")
       return;
   }
+  
+  init_if_not_exists(new string("br"));
+  init_if_not_exists(new string("indirect"));
 
+  /* bef["br"] = 0; ma["br"] = 0; en["br"] = 0; */
+  /* bef["indirect"] = 0; ma["indirect"] = 0; en["indirect"] = 0; */
+  
   for (BBL bbl = TRACE_BblHead(trace); BBL_Valid(bbl); bbl = BBL_Next(bbl)) {
     for (INS ins = BBL_InsHead(bbl); INS_Valid(ins); ins = INS_Next(ins)) {
 
       if (INS_IsBranch(ins)){
         if (INS_IsIndirectBranchOrCall(ins)){
           INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)count_inst,
-              IARG_PTR, new string("br"),
               IARG_PTR, new string("indirect"),
               IARG_END);
         }
         if (INS_IsDirectBranchOrCall(ins)){
           INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)count_inst,
               IARG_PTR, new string("br"),
-              IARG_PTR, new string("direct"),
               IARG_END);
         }
       }
-
-      // std::string s = check_mnemonic(INS_Mnemonic(ins));
-      //
-      // if (s.size() != 0){
-      //   INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)count_inst,
-      //       IARG_PTR, new string(s),
-      //       IARG_PTR, new string(INS_Mnemonic(ins)),
-      //       IARG_END);
-      // }
 
     }
   }
 }
 
-
 VOID Fini(INT32 code, VOID *v) {
-  bool go = false;
-
-  for (map<const string, unsigned long long int>::iterator it = mapa.begin();
-       it != mapa.end(); it++){
-    if (go)
-      out << ',' << it->first;
-    else
-      out << it->first;
-
-    go = true;
-  }
-  
-  out << endl;
-  go = false;
-
-  for (map<const string, unsigned long long int>::iterator it = mapa.begin();
-       it != mapa.end(); it++){
-    if (go)
-      out << ',' << it->second;
-    else
-      out << it->second;
-
-    go = true;
-  }
-  out << endl;
-  
+  out << "br_before, br_main, br_end, indirect_before, indirect_main, indirect_end\n";
+  out << bef["br"] << ", " << ma["br"] << ", " << en["br"] << ", ";
+  out << bef["indirect"] << ", " << ma["indirect"] << ", " << en["indirect"] << "\n";
   out.close();
 }
 

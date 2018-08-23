@@ -10,23 +10,20 @@
 
 using namespace INSTLIB;
 
+
 ofstream out;
 FILTER filter;
 
-std::set<std::string> sete;
-
-// void count_inst(const string *type, const string *s){
-//   if (valid){
-//     mapa[*type + "_" + prefix + *s]++;
-//   }
-// }
-
 void count_inst(const string *type){
   if (valid){
-    mapa[*type + "_" + prefix]++;
+    if (prefix == "before")
+      bef[*type]++;
+    else if (prefix == "main")
+      ma[*type]++;
+    else
+      en[*type]++;
   }
 }
-
 
 std::string check_mnemonic(const string &m){
 
@@ -85,6 +82,8 @@ VOID Trace(TRACE trace, VOID *a) {
       std::string s = check_mnemonic(INS_Mnemonic(ins));
 
       if (s.size() != 0){
+        init_if_not_exists(new string(s));
+        types.insert(s);
         INS_InsertPredicatedCall(ins, IPOINT_BEFORE, (AFUNPTR)count_inst,
             IARG_PTR, new string(s),
             // IARG_PTR, new string(INS_Mnemonic(ins)),
@@ -97,31 +96,28 @@ VOID Trace(TRACE trace, VOID *a) {
 
 
 VOID Fini(INT32 code, VOID *v) {
-  bool go = false;
-
-  for (map<const string, unsigned long long int>::iterator it = mapa.begin();
-       it != mapa.end(); it++){
-    if (go)
-      out << ',' << it->first;
-    else
-      out << it->first;
-
-    go = true;
-  }
   
-  out << endl;
-  go = false;
-
-  for (map<const string, unsigned long long int>::iterator it = mapa.begin();
-       it != mapa.end(); it++){
-    if (go)
-      out << ',' << it->second;
-    else
-      out << it->second;
-
-    go = true;
+  unsigned cnt = 0;
+  for (std::set<std::string>::iterator it = types.begin();
+       it != types.end();
+       it++){
+    out << *it + "_before" << "," << *it << "_main" << "," << *it << "_end";
+    cnt++;
+    if (cnt != types.size())
+      out << ", ";
   }
-  out << endl;
+  out << "\n";
+  
+  for (std::set<std::string>::iterator it = types.begin();
+       it != types.end();
+       it++){
+    out << *it << "\n";
+    out << bef[*it] << "," << ma[*it] << "," << en[*it];
+    cnt++;
+    if (cnt != types.size())
+      out << ", ";
+  }
+  out << "\n";
   
   out.close();
 }
