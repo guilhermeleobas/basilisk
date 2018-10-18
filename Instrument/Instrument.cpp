@@ -78,8 +78,7 @@ void Instrument::insert_dump_call(Module &M, Instruction *I){
 
   // Let's create the function call
   Constant *const_function = M.getOrInsertFunction("dump_csv",
-    FunctionType::getVoidTy(M.getContext()),
-    NULL);
+    FunctionType::getVoidTy(M.getContext()));
 
   Function *f = cast<Function>(const_function);
 

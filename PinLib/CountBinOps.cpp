@@ -111,7 +111,6 @@ VOID Fini(INT32 code, VOID *v) {
   for (std::set<std::string>::iterator it = types.begin();
        it != types.end();
        it++){
-    out << *it << "\n";
     out << bef[*it] << "," << ma[*it] << "," << en[*it];
     cnt++;
     if (cnt != types.size())
