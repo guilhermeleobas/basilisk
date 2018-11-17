@@ -9,24 +9,11 @@ class Instrument : public ModulePass {
 
   bool runOnModule(Module&);
 
-  /*
-    Debugging method
-  */
-  void print_instructions(Module &M);
-
-  /*
-    Allocate in the stack a new char* with the opcodeName of the 
-    instruction. For instance, if the instruction is:
-    ` store i32 %n, i32* %n.addr, align 4 `
-    This function will create the following instruction:
-    ` @0 = private unnamed_addr constant [6 x i8] c"store\00" `
-  */
-  Value* alloc_string(Instruction *I);
-  Value* alloc_counter(Module &M, Instruction *I, bool branch);
+  // Creates (if not exists) a global string ptr with
+  // the instructino opcode name
+  Value* get_or_create_string(Instruction *I);
   
-  /*
-    Inserts in the program a function call to dump a csv
-  */
+  // Create the call to dump the csv to a file
   void insert_dump_call(Module &M, Instruction *I);
 
   /*
@@ -37,7 +24,8 @@ class Instrument : public ModulePass {
     `count_instruction` is defined in the file Collect/collect.c
   */
   void insert_call(Module &M, Instruction *inst);
-  void insert_inc(Module &M, Instruction *inst, bool branch);
+
+  // Get the number of predecessors of a basic block
   int getNumPredecessors(BasicBlock *BB);
 
   Instrument() : ModulePass(ID) {}
