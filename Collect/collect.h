@@ -2,15 +2,39 @@
 
 #define FILENAME "count.csv"
 
-#define OPCODES_LENGTH 300
 
 typedef struct Instruction{
-  char type[10];
+  char type[20];
   unsigned long long counter;
 } Instruction;
 
-static Instruction array[300];
-static int size = 0;
+#define assertf(A, M, ...) if(!(A)) \
+ { fprintf(stderr, M, ##__VA_ARGS__); fprintf(stderr, "\n"); assert(A); }
+
+#define OPCODES_LENGTH 20
+
+static Instruction array[OPCODES_LENGTH] = {
+  {"store", 0},
+  {"load", 0},
+  {"icmp", 0},
+  {"add", 0},
+  {"sub", 0},
+  {"mul", 0},
+  {"udiv", 0},
+  {"sdiv", 0},
+  {"urem", 0},
+  {"srem", 0},
+  {"fadd", 0},
+  {"fsub", 0},
+  {"fmul", 0},
+  {"fdiv", 0},
+  {"fcmp", 0},
+  {"and", 0},
+  {"or", 0},
+  {"xor", 0},
+  {"br", 0},
+  {"indirect_br", 0},
+};
 
 void count_instruction(char *type);
 void dump_csv();

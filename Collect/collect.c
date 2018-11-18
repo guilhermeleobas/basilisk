@@ -6,12 +6,15 @@
 #include "collect.h"
 
 void count_instruction(char *type) {
+  unsigned size = OPCODES_LENGTH;
   for (int i = 0; i < size; i++) {
     if (strcmp(array[i].type, type) == 0 /* found */) {
       ++array[i].counter;
       return;
     }
   }
+
+  assertf(0, "unreacheable state with type = %s", type);
   
   // Create a new entry
   strcpy(array[size].type, type);
@@ -24,6 +27,8 @@ void dump_csv() {
   FILE *f;
   f = fopen(FILENAME, "w");
   if (f != NULL) {
+
+    unsigned size = OPCODES_LENGTH;
 
     if (size) {
       fprintf(f, "%s", array[0].type);
