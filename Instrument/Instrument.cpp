@@ -118,6 +118,9 @@ bool Instrument::runOnModule(Module &M) {
           insert_call(M, fcmp);
           // insert_inc(M, fcmp);
         }
+        else if (CallInst *call = dyn_cast<CallInst>(&I)){
+          insert_call(M, call);
+        }
         // else if (BranchInst *br = dyn_cast<BranchInst>(&I)){
         //   insert_call(M, br);
         // }
