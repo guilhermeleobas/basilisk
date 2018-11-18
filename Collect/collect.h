@@ -11,7 +11,7 @@ typedef struct Instruction{
 #define assertf(A, M, ...) if(!(A)) \
  { fprintf(stderr, M, ##__VA_ARGS__); fprintf(stderr, "\n"); assert(A); }
 
-#define OPCODES_LENGTH 20
+#define OPCODES_LENGTH 24
 
 static Instruction array[OPCODES_LENGTH] = {
   {"store", 0},
@@ -29,9 +29,13 @@ static Instruction array[OPCODES_LENGTH] = {
   {"fmul", 0},
   {"fdiv", 0},
   {"fcmp", 0},
+  {"frem", 0},
   {"and", 0},
   {"or", 0},
   {"xor", 0},
+  {"shl", 0},
+  {"lshr", 0},
+  {"ashr", 0},
   {"br", 0},
   {"indirect_br", 0},
 };
