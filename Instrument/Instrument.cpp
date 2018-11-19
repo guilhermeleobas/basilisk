@@ -93,40 +93,12 @@ int Instrument::getNumPredecessors(BasicBlock *BB){
 
 
 bool Instrument::runOnModule(Module &M) {
-
   for (auto &F : M){
     for (auto &BB : F){
       for (auto &I : BB){
-        
-        if (StoreInst *store = dyn_cast<StoreInst>(&I)){
-          insert_call(M, store);
-          // insert_inc(M, store);
-        }
-        else if (LoadInst *load = dyn_cast<LoadInst>(&I)){
-          insert_call(M, load);
-          // insert_inc(M, load);
-        }
-        else if (BinaryOperator *bin = dyn_cast<BinaryOperator>(&I)){
-          insert_call(M, bin);
-          // insert_inc(M, bin);
-        }
-        else if (ICmpInst *icmp = dyn_cast<ICmpInst>(&I)){
-          insert_call(M, icmp);
-          // insert_inc(M, icmp);
-        }
-        else if (FCmpInst *fcmp = dyn_cast<FCmpInst>(&I)){
-          insert_call(M, fcmp);
-          // insert_inc(M, fcmp);
-        }
-        else if (CallInst *call = dyn_cast<CallInst>(&I)){
+        if (CallInst *call = dyn_cast<CallInst>(&I)){
           insert_call(M, call);
         }
-        // else if (BranchInst *br = dyn_cast<BranchInst>(&I)){
-        //   insert_call(M, br);
-        // }
-        // else if (IndirectBrInst *bri = dyn_cast<IndirectBrInst>(&I)){
-        //   insert_call(M, bri);
-        // }
         else if (ReturnInst *ri = dyn_cast<ReturnInst>(&I)){
           if (F.getName() == "main")
             insert_dump_call(M, ri);
@@ -139,7 +111,48 @@ bool Instrument::runOnModule(Module &M) {
               insert_dump_call(M, ci);
           }
         }
+      }
+    }
+  }
 
+  for (auto &F : M){
+    for (auto &BB : F){
+      for (auto &I : BB){
+        
+        switch(I.getOpcode()){
+          // Memory Access
+          case Instruction::Store:
+          case Instruction::Load:
+          
+          // Binary operators
+          case Instruction::Add:
+          case Instruction::FAdd:
+          case Instruction::Sub:
+          case Instruction::FSub:
+          case Instruction::Mul:
+          case Instruction::FMul:
+          case Instruction::UDiv:
+          case Instruction::SDiv:
+          case Instruction::FDiv:
+          case Instruction::URem:
+          case Instruction::SRem:
+          case Instruction::FRem:
+            
+          // Logical Operators
+          case Instruction::And:
+          case Instruction::Or:
+          case Instruction::Xor:
+          
+          // Other instructions
+          case Instruction::ICmp:
+          case Instruction::FCmp:
+          case Instruction::Call:
+          case Instruction::Select:
+          case Instruction::Shl:
+          case Instruction::LShr:
+          case Instruction::AShr:
+            insert_call(M, &I);
+        }
       }
     }
   }
