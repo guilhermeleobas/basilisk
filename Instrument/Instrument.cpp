@@ -19,12 +19,23 @@
 #include <map>
 
 #define DEBUG_TYPE "Instrument"
+#define COUNTER "DCC888_counter"
 
 std::map<std::string, Value*> variables;
 std::map<std::string, Value*> count_variables;
 
+void Instrument::print_instructions(Module &M){
+  for (auto &F : M){
+    for (auto &BB : F){
+      for (auto &I : BB){
+        errs() << I << "\n";
+      }
+    }
+  }
+}
 
-Value* Instrument::get_or_create_string(Instruction *I){
+
+Value* Instrument::alloc_string(Instruction *I){
 
   /* 
   A variable is just a char* with some text identifying the instruction.
@@ -42,6 +53,23 @@ Value* Instrument::get_or_create_string(Instruction *I){
   variables[opcodeName] = var;
 
   return var;
+}
+
+
+Value* Instrument::alloc_counter(Module &M, Instruction *I, bool branch=false){
+  
+  std::string opcodeName;
+  if (!branch)
+    opcodeName = I->getOpcodeName();
+  else
+    opcodeName = "br";
+  
+  IRBuilder<> Builder(I);
+
+  M.getOrInsertGlobal(opcodeName + "_inc", Builder.getInt64Ty());
+  
+  GlobalVariable *gVar = M.getNamedGlobal(opcodeName + "_inc"); 
+  return gVar;
 }
 
 
@@ -67,12 +95,13 @@ void Instrument::insert_call(Module &M, Instruction *I){
 
   Constant *const_function = M.getOrInsertFunction(function_name,
     FunctionType::getVoidTy(M.getContext()),
-    Type::getInt8PtrTy(M.getContext()));
+    Type::getInt8PtrTy(M.getContext()),
+    nullptr);
 
   Function *f = cast<Function>(const_function);
 
-  // Create the parameter for the call
-  Value *v = get_or_create_string(I);
+  // Let's create the parameter for the call
+  Value *v = alloc_string(I);
   
   // Fill the parameter
   std::vector<Value *> args;
@@ -80,6 +109,29 @@ void Instrument::insert_call(Module &M, Instruction *I){
 
   // Create the call
   Builder.CreateCall(f, args);
+}
+
+void Instrument::insert_inc(Module &M, Instruction *I, bool branch=false){
+
+  alloc_counter(M, I, branch);
+
+  GlobalVariable *gVar;
+
+  if (!branch)
+    gVar = M.getNamedGlobal(std::string(I->getOpcodeName()) + "_inc");
+  else{
+    gVar = M.getNamedGlobal("br_inc");
+  }
+  
+  IRBuilder<> Builder(I);
+
+  // if (branch)
+    // errs() << "passou " << *gVar << " AAA\n";
+
+  LoadInst *Load = Builder.CreateLoad(gVar);
+  Value *Inc = Builder.CreateAdd(Builder.getInt64(1), Load);
+  StoreInst *Store = Builder.CreateStore(Inc, gVar);
+
 }
 
 int Instrument::getNumPredecessors(BasicBlock *BB){
@@ -93,17 +145,43 @@ int Instrument::getNumPredecessors(BasicBlock *BB){
 
 
 bool Instrument::runOnModule(Module &M) {
+
   for (auto &F : M){
     for (auto &BB : F){
       for (auto &I : BB){
-        if (CallInst *call = dyn_cast<CallInst>(&I)){
-          insert_call(M, call);
+        
+        if (StoreInst *store = dyn_cast<StoreInst>(&I)){
+          // insert_call(M, store);
+          insert_inc(M, store);
         }
+        else if (LoadInst *load = dyn_cast<LoadInst>(&I)){
+          // insert_call(M, load);
+          insert_inc(M, load);
+        }
+        else if (BinaryOperator *bin = dyn_cast<BinaryOperator>(&I)){
+          // insert_call(M, bin);
+          insert_inc(M, bin);
+        }
+        else if (ICmpInst *icmp = dyn_cast<ICmpInst>(&I)){
+          // insert_call(M, icmp);
+          insert_inc(M, icmp);
+        }
+        else if (FCmpInst *fcmp = dyn_cast<FCmpInst>(&I)){
+          // insert_call(M, fcmp);
+          insert_inc(M, fcmp);
+        }
+        // else if (BranchInst *br = dyn_cast<BranchInst>(&I)){
+        //   // insert_call(M, br);
+        // }
+        // else if (IndirectBrInst *bri = dyn_cast<IndirectBrInst>(&I)){
+        //   // insert_call(M, bri);
+        // }
         else if (ReturnInst *ri = dyn_cast<ReturnInst>(&I)){
           if (F.getName() == "main")
             insert_dump_call(M, ri);
         }
         else if (CallInst *ci = dyn_cast<CallInst>(&I)){
+          insert_inc(M, ci);
           Function *fun = ci->getCalledFunction();
           if (fun){
             std::string name = fun->getName();
@@ -111,48 +189,10 @@ bool Instrument::runOnModule(Module &M) {
               insert_dump_call(M, ci);
           }
         }
-      }
-    }
-  }
-
-  for (auto &F : M){
-    for (auto &BB : F){
-      for (auto &I : BB){
-        
-        switch(I.getOpcode()){
-          // Memory Access
-          case Instruction::Store:
-          case Instruction::Load:
-          
-          // Binary operators
-          case Instruction::Add:
-          case Instruction::FAdd:
-          case Instruction::Sub:
-          case Instruction::FSub:
-          case Instruction::Mul:
-          case Instruction::FMul:
-          case Instruction::UDiv:
-          case Instruction::SDiv:
-          case Instruction::FDiv:
-          case Instruction::URem:
-          case Instruction::SRem:
-          case Instruction::FRem:
-            
-          // Logical Operators
-          case Instruction::And:
-          case Instruction::Or:
-          case Instruction::Xor:
-          
-          // Other instructions
-          case Instruction::ICmp:
-          case Instruction::FCmp:
-          case Instruction::Call:
-          case Instruction::Select:
-          case Instruction::Shl:
-          case Instruction::LShr:
-          case Instruction::AShr:
-            insert_call(M, &I);
+        else if(SelectInst *si = dyn_cast<SelectInst>(&I)){
+          insert_inc(M, si);
         }
+
       }
     }
   }
@@ -161,7 +201,7 @@ bool Instrument::runOnModule(Module &M) {
     for (auto &BB : F){
       if (getNumPredecessors(&BB) >= 2){
         Instruction *ins = BB.getTerminator();
-        insert_call(M, ins);
+        insert_inc(M, ins, true);
       }
     }
   }

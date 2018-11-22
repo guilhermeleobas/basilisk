@@ -2,55 +2,47 @@
 
 #define FILENAME "count.csv"
 
-
 typedef struct Instruction{
-  char type[20];
+  char name[10];
   unsigned long long counter;
 } Instruction;
 
-#define assertf(A, M, ...) if(!(A)) \
- { fprintf(stderr, M, ##__VA_ARGS__); fprintf(stderr, "\n"); assert(A); }
+static Instruction array[10000];
+static int size = 0;
 
-#define OPCODES_LENGTH 26
-
-static Instruction array[OPCODES_LENGTH] = {
-  // Memory Access
-  {"store", 0},
-  {"load", 0},
-  
-  // Branches
-  {"br", 0},
-  {"indirect_br", 0},
-  
-  // Binary Operators
-  {"add", 0},
-  {"fadd", 0},
-  {"sub", 0},
-  {"fsub", 0},
-  {"mul", 0},
-  {"fmul", 0},
-  {"udiv", 0},
-  {"sdiv", 0},
-  {"fdiv", 0},
-  {"urem", 0},
-  {"srem", 0},
-  {"frem", 0},
-  
-  // Logical Operators
-  {"and", 0},
-  {"or", 0},
-  {"xor", 0},
-  
-  // Other Instructions
-  {"icmp", 0},
-  {"fcmp", 0},
-  {"call", 0},
-  {"select", 0},
-  {"shl", 0},
-  {"lshr", 0},
-  {"ashr", 0},
-  
-};
-
-void count_instruction(char *type);
+void count_instruction(char*);
 void dump_csv();
+
+void dump_inst(char*);
+
+
+long long int store_inc = 0;
+long long int load_inc = 0;
+
+long long int and_inc = 0;
+long long int or_inc = 0;
+long long int xor_inc = 0;
+
+long long int ashr_inc = 0;
+long long int shl_inc = 0;
+long long int lshr_inc = 0;
+
+long long int add_inc = 0;
+long long int sub_inc = 0;
+long long int mul_inc = 0;
+long long int udiv_inc = 0;
+long long int sdiv_inc = 0;
+long long int urem_inc = 0;
+long long int srem_inc = 0;
+long long int icmp_inc = 0;
+
+long long int fadd_inc = 0;
+long long int fcmp_inc = 0;
+long long int fdiv_inc = 0;
+long long int fmul_inc = 0;
+long long int fsub_inc = 0;
+
+long long int br_inc = 0;
+
+long long int call_inc = 0;
+long long int select_inc = 0;
