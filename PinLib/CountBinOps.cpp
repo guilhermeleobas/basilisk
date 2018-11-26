@@ -144,7 +144,7 @@ VOID Fini(INT32 code, VOID *v) {
   out << "\n";
 
   for (map<string, vector<string> >::iterator it = types.begin(); it != types.end(); it++){
-    out << bef[it->first] << "," << ma[it->first] << "," << en[it->first];
+    out << bef[it->first] << "," << ma[it->first] << "," << en[it->first] << ',';
   }
   out << "\n";
   
