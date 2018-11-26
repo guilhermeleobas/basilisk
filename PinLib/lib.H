@@ -1,9 +1,13 @@
 #pragma once
 
-static std::map<std::string, unsigned long long int> bef;
-static std::map<std::string, unsigned long long int> ma;
-static std::map<std::string, unsigned long long int> en;
-static std::set<std::string> types;
+using std::string;
+using std::vector;
+using std::map;
+
+static map<string, unsigned long long int> bef;
+static map<string, unsigned long long int> ma;
+static map<string, unsigned long long int> en;
+static map<string, vector<std::string> > types;
 static bool valid = true;
 static std::string prefix = "before";
 

@@ -3,6 +3,7 @@
 #include <set>
 #include <map>
 #include <string>
+#include <vector>
 
 #include "pin.H"
 #include "instlib.H"
@@ -25,42 +26,85 @@ void count_inst(const string *type){
   }
 }
 
+template<typename T, size_t N>
+T * end(T (&ra)[N]) {
+    return ra + N;
+}
+
+void init(){
+
+  const char *ADD[] = {"ADC", "ADD", "ADD_LOCK", "INC", "PADDD", "PADDQ", "XADD_LOCK"};
+  const char *FADD[] = {"ADDPD", "ADDPS", "ADDSD", "ADDSS", "FADD", "FADDP", "VADDSD"};
+  const char *SUB[] = {"DEC", "DEC_LOCK", "PSUBB", "SBB",
+                                          "SUB", "VPSUBB"};  
+  const char *FSUB[] = {"FSUB", "FSUBP", "FSUBRP", "SUBPD",
+                                           "SUBSD", "SUBSS", "VSUBSD"};
+  const char *MUL[] = {"IMUL", "MUL"};
+  const char *FMUL[] = {"FMUL", "FMULP", "MULPD", "MULPS",
+                                           "MULSD", "MULSS", "VMULSD"};
+  const char *DIV[] = {"DIV", "IDIV"};
+  const char *FDIV[] = {"DIVPD", "DIVSD", "DIVSS", "FDIV", "VDIVSD"};
+  const char *AND[] = {"AND", "ANDNPD", "ANDPD", "ANDPS", "VANDNPD",
+                               "VANDPD", "VPAND", "VPANDN"};
+  const char *OR[] = {"OR", "OR_LOCK", "POR", "VORPD", "VPOR"};
+  const char *CMP[] = {"CMP", "CMPSD_XMM", "CMPSS", "CMPXCHG", "CMPXCHG_LOCK", "PCMPEQB",
+      "PCMPEQD", "PCMPISTRI", "PTEST", "REPE_CMPSB", "TEST", "VPCMPEQB",
+      "VPCMPGTB"};
+  const char *FCMP[] = {"FUCOMIP", "UCOMISD", "UCOMISS",
+                                           "VCMPSD", "VUCOMISD"};
+  const char *SHL[] = {"PSLLDQ", "SHL", "SHLD"};
+  const char *ASHR[] = {"SAR"};
+  const char *LSHR[] = {"PSRLDQ", "SHR", "SHRD"};
+  const char *CALL[] = {"CALL_NEAR", "SYSCALL"};
+  const char *XOR[] = {"PXOR", "VPXOR", "VXORPD", "XOR",
+                                          "XORPD", "XORPS"};
+
+  types["ADD"] = vector<string>(ADD, end(ADD));
+  types["FADD"] = vector<string>(FADD, end(FADD));
+  types["SUB"] = vector<string>(SUB, end(SUB));
+  types["FSUB"] = vector<string>(FSUB, end(FSUB));
+  types["MUL"] = vector<string>(MUL, end(MUL));
+  types["FMUL"] = vector<string>(FMUL, end(FMUL));
+  types["DIV"] = vector<string>(DIV, end(DIV));
+  types["FDIV"] = vector<string>(FDIV, end(FDIV));
+  types["AND"] = vector<string>(AND, end(AND));
+  types["OR"] = vector<string>(OR, end(OR));
+  types["CMP"] = vector<string>(CMP, end(CMP));
+  types["FCMP"] = vector<string>(FCMP, end(FCMP));
+  types["SHL"] = vector<string>(SHL, end(SHL));
+  types["ASHR"] = vector<string>(ASHR, end(ASHR));
+  types["LSHR"] = vector<string>(LSHR, end(LSHR));
+  types["CALL"] = vector<string>(CALL, end(CALL));
+  types["XOR"] = vector<string>(XOR, end(XOR));
+
+  init_if_not_exists("ADD");
+  init_if_not_exists("FADD");
+  init_if_not_exists("SUB");
+  init_if_not_exists("FSUB");
+  init_if_not_exists("MUL");
+  init_if_not_exists("FMUL");
+  init_if_not_exists("DIV");
+  init_if_not_exists("FDIV");
+  init_if_not_exists("AND");
+  init_if_not_exists("OR");
+  init_if_not_exists("CMP");
+  init_if_not_exists("FCMP");
+  init_if_not_exists("SHL");
+  init_if_not_exists("ASHR");
+  init_if_not_exists("LSHR");
+  init_if_not_exists("CALL");
+  init_if_not_exists("XOR" ) ;
+
+}
+
 std::string check_mnemonic(const string &m){
 
-  if (m == "ADD" || m == "INC"){
-    return "ADD";
+  for (map<string, vector<string> >::iterator it = types.begin(); it != types.end(); it++){
+    if (std::find(it->second.begin(), it->second.end(), m) != it->second.end()){
+      return it->first;
+    }
   }
-
-  if (m == "SUB" || m == "DEC" || m == "SBB" ||
-      m == "PSUBB" || m == "PSUBW" || m == "PSUBD"){
-    return "SUB";
-  }
-
-  if (m == "MUL" || m == "IMUL"){
-    return "MUL";
-  }
-
-  if (m == "DIV" || m == "IDIV")
-    return "DIV";
-
-  // floating-point instructions
-  if (m == "ADDPD" || m == "ADDPS" || m == "ADDSD" || m == "ADDSS" ||
-      m == "FADD" || m == "FADDP" || m == "FIADD")
-    return "FADD";
-
-  if (m == "SUBPD" || m == "SUBPS" || m == "SUBSD" || m == "SUBSS" ||
-      m == "FSUB" || m == "FSUBP" || m == "FISUB")
-    return "FSUB";
-
-  if (m == "MULPD" || m == "MULPS" || m == "MULSD" || m == "MULSS" ||
-      m == "FMUL" || m == "FMULP" || m == "FIMUL")
-    return "FMUL";
-
-  if (m == "DIVPD" || m == "DIVPS" || m == "DIVSD" || m == "DIVSS" ||
-      m == "FDIV" || m == "FDIVP" || m == "FIDIV" ||
-      m == "FDIVR" || m == "FDIVRP" || m == "FIDIVR")
-    return "FDIV";
-
+  
   return "";
 }
 
@@ -80,10 +124,7 @@ VOID Trace(TRACE trace, VOID *a) {
     for (INS ins = BBL_InsHead(bbl); INS_Valid(ins); ins = INS_Next(ins)) {
 
       std::string s = check_mnemonic(INS_Mnemonic(ins));
-
       if (s.size() != 0){
-        init_if_not_exists(new string(s));
-        types.insert(s);
         INS_InsertPredicatedCall(ins, IPOINT_BEFORE, (AFUNPTR)count_inst,
             IARG_PTR, new string(s),
             // IARG_PTR, new string(INS_Mnemonic(ins)),
@@ -96,25 +137,14 @@ VOID Trace(TRACE trace, VOID *a) {
 
 
 VOID Fini(INT32 code, VOID *v) {
-  
-  unsigned cnt = 0;
-  for (std::set<std::string>::iterator it = types.begin();
-       it != types.end();
-       it++){
-    out << *it + "_before" << "," << *it << "_main" << "," << *it << "_end";
-    cnt++;
-    if (cnt != types.size())
-      out << ", ";
+
+  for (map<string, vector<string> >::iterator it = types.begin(); it != types.end(); it++){
+    out << it->first;
   }
   out << "\n";
-  
-  for (std::set<std::string>::iterator it = types.begin();
-       it != types.end();
-       it++){
-    out << bef[*it] << "," << ma[*it] << "," << en[*it];
-    cnt++;
-    if (cnt != types.size())
-      out << ", ";
+
+  for (map<string, vector<string> >::iterator it = types.begin(); it != types.end(); it++){
+    out << bef[it->first] << "," << ma[it->first] << "," << en[it->first];
   }
   out << "\n";
   
@@ -143,6 +173,8 @@ int main(int argc, char *argv[]) {
   }
   
   out.open("binops.csv");
+  
+  init();
 
   // filter.Activate();
 
