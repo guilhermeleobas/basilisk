@@ -139,7 +139,7 @@ VOID Trace(TRACE trace, VOID *a) {
 VOID Fini(INT32 code, VOID *v) {
 
   for (map<string, vector<string> >::iterator it = types.begin(); it != types.end(); it++){
-    out << it->first;
+    out << it->first << ',';
   }
   out << "\n";
 
