@@ -77,23 +77,23 @@ void init(){
   types["CALL"] = vector<string>(CALL, end(CALL));
   types["XOR"] = vector<string>(XOR, end(XOR));
 
-  init_if_not_exists("ADD");
-  init_if_not_exists("FADD");
-  init_if_not_exists("SUB");
-  init_if_not_exists("FSUB");
-  init_if_not_exists("MUL");
-  init_if_not_exists("FMUL");
-  init_if_not_exists("DIV");
-  init_if_not_exists("FDIV");
-  init_if_not_exists("AND");
-  init_if_not_exists("OR");
-  init_if_not_exists("CMP");
-  init_if_not_exists("FCMP");
-  init_if_not_exists("SHL");
-  init_if_not_exists("ASHR");
-  init_if_not_exists("LSHR");
-  init_if_not_exists("CALL");
-  init_if_not_exists("XOR" ) ;
+  init_if_not_exists(new string("ADD"));
+  init_if_not_exists(new string("FADD"));
+  init_if_not_exists(new string("SUB"));
+  init_if_not_exists(new string("FSUB"));
+  init_if_not_exists(new string("MUL"));
+  init_if_not_exists(new string("FMUL"));
+  init_if_not_exists(new string("DIV"));
+  init_if_not_exists(new string("FDIV"));
+  init_if_not_exists(new string("AND"));
+  init_if_not_exists(new string("OR"));
+  init_if_not_exists(new string("CMP"));
+  init_if_not_exists(new string("FCMP"));
+  init_if_not_exists(new string("SHL"));
+  init_if_not_exists(new string("ASHR"));
+  init_if_not_exists(new string("LSHR"));
+  init_if_not_exists(new string("CALL"));
+  init_if_not_exists(new string("XOR" ) );
 
 }
 
